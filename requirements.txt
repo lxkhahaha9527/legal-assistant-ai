@@ -1,20 +1,28 @@
+# Web UI
 streamlit>=1.28.0
+streamlit-option-menu>=0.3.6
+
+# LangChain framework
 langchain>=0.1.0
 langchain-openai>=0.0.5
 langchain-anthropic>=0.1.0
 langchain-community>=0.0.10
 langchain-text-splitters>=0.0.1
+
+# Vector database
 chromadb>=0.4.22
-faiss-cpu>=1.7.4
+
+# Document processing
 pypdf>=3.17.0
 python-docx>=1.1.0
+
+# Embeddings for RAG
+sentence-transformers>=2.2.0
+
+# API clients
+openai>=1.0.0
+anthropic>=0.8.0
+
+# Utilities
 pydantic>=2.5.0
 python-dotenv>=1.0.0
-streamlit-option-menu>=0.3.6
-uuid>=1.30
-
-# Alibaba Bailian support (via OpenAI compatible mode)
-# No extra package needed, use langchain-openai
-
-# DeepSeek support (via OpenAI compatible mode)
-# No extra package needed, use langchain-openai
