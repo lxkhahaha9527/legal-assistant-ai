@@ -112,8 +112,9 @@ class LegalRetriever:
         return results
     
     def _get_persist_dir(self) -> Path:
-        """获取向量存储目录"""
-        base = Path("D:/AI_agent/data/vectorstore")
+        """获取向量存储目录（兼容本地和 Streamlit Cloud）"""
+        # 使用相对路径，基于当前文件位置
+        base = Path(__file__).parent.parent / "data" / "vectorstore"
         return base / self.user_id
     
     def _load_index(self) -> bool:

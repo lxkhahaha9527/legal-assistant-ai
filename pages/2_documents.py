@@ -21,8 +21,9 @@ if not st.session_state.get("user_id"):
 
 user_id = st.session_state.user_id
 
-# User documents directory
-user_docs_dir = Path(f"D:/AI_agent/data/legal_docs/{user_id}")
+# User documents directory (兼容本地和 Streamlit Cloud)
+BASE_DIR = Path(__file__).parent.parent
+user_docs_dir = BASE_DIR / "data" / "legal_docs" / user_id
 user_docs_dir.mkdir(parents=True, exist_ok=True)
 
 st.markdown("## 📁 法律文档管理")

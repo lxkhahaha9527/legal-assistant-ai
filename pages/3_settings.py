@@ -305,15 +305,17 @@ if st.button("🗑️ 清除所有数据", type="secondary"):
     confirm = st.checkbox("我确认要清除所有数据，此操作不可撤销！")
     if confirm:
         import shutil
-        user_dir = Path(f"D:/AI_agent/memory/users/{user_id}")
+        BASE_DIR = Path(__file__).parent.parent
+        
+        user_dir = BASE_DIR / "memory" / "users" / user_id
         if user_dir.exists():
             shutil.rmtree(user_dir)
         
-        conv_dir = Path(f"D:/AI_agent/memory/conversations/{user_id}")
+        conv_dir = BASE_DIR / "memory" / "conversations" / user_id
         if conv_dir.exists():
             shutil.rmtree(conv_dir)
         
-        docs_dir = Path(f"D:/AI_agent/data/legal_docs/{user_id}")
+        docs_dir = BASE_DIR / "data" / "legal_docs" / user_id
         if docs_dir.exists():
             shutil.rmtree(docs_dir)
         
