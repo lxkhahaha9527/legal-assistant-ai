@@ -143,11 +143,16 @@ class ConfigManager:
         provider = user.get("model_provider", "openai")
         provider_info = PROVIDER_CONFIG.get(provider, PROVIDER_CONFIG["openai"])
         
+        # 优先使用用户设置的 API Key，如果没有则尝试环境变量
+        user_api_key = user.get("api_keys", {}).get(provider, "")
+        env_api_key = os.getenv(provider_info["env_key"], "")
+        api_key = user_api_key if user_api_key else env_api_key
+        
         return {
             "provider": provider,
             "provider_name": provider_info["name"],
             "model": user.get("preferred_model", provider_info["default_model"]),
-            "api_key": user.get("api_keys", {}).get(provider, ""),
+            "api_key": api_key,
             "api_base": user.get("api_base", provider_info["api_base"]),
             "temperature": user.get("temperature", 0.7),
             "max_tokens": user.get("max_tokens", 2048),
