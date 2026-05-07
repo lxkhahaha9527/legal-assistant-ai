@@ -26,3 +26,6 @@ anthropic>=0.8.0
 # Utilities
 pydantic>=2.5.0
 python-dotenv>=1.0.0
+
+# Fix protobuf compatibility
+protobuf<=3.20.3
