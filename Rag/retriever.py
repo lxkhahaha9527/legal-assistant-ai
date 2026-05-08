@@ -56,6 +56,7 @@ class LegalRetriever:
         
         # 创建向量存储
         persist_dir = self._get_persist_dir()
+        persist_dir.mkdir(parents=True, exist_ok=True)
         
         if regenerate:
             self._delete_collection()
@@ -66,6 +67,9 @@ class LegalRetriever:
             collection_name=self.collection_name,
             persist_directory=str(persist_dir)
         )
+        
+        # 持久化到磁盘
+        self.vectorstore.persist()
         
         return True
     
@@ -149,6 +153,14 @@ class LegalRetriever:
     
     def get_document_count(self) -> int:
         """获取索引文档数量"""
+        # 确保 embedding 已初始化
+        if not self.embeddings:
+            api_key = os.environ.get("OPENAI_API_KEY")
+            if api_key:
+                self.set_api_key(api_key)
+            else:
+                return 0
+        
         if not self.vectorstore:
             self._load_index()
         

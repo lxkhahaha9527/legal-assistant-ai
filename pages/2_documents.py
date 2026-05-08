@@ -102,11 +102,14 @@ st.markdown("### 📊 索引状态")
 
 if st.session_state.get("api_key"):
     try:
-        retriever = LegalRetriever(user_id)
+        retriever = LegalRetriever(user_id, str(user_docs_dir))
         retriever.set_api_key(st.session_state.api_key)
         count = retriever.get_document_count()
-        st.info(f"当前索引文档数: {count}")
-    except:
-        st.info("尚未构建索引")
+        if count > 0:
+            st.success(f"✅ 当前索引文档数: {count}")
+        else:
+            st.info("ℹ️ 尚未构建索引，请上传文档后点击「构建向量索引」")
+    except Exception as e:
+        st.info(f"ℹ️ 索引状态: 未初始化")
 else:
-    st.warning("请先设置API Key以查看索引状态")
+    st.warning("⚠️ 请先设置API Key以查看索引状态")
