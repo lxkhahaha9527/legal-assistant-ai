@@ -1,6 +1,6 @@
 """
 Settings Page - Model and API Configuration
-Supports: OpenAI, Anthropic, Alibaba Bailian, DeepSeek
+Supports: Alibaba Bailian, DeepSeek, Custom
 """
 import streamlit as st
 import sys
@@ -21,20 +21,8 @@ if not st.session_state.get("user_id"):
 user_id = st.session_state.user_id
 memory = MemoryManager(user_id)
 
-# Model configuration
+# Model configuration - 默认使用阿里百炼，移除 OpenAI/Anthropic
 PROVIDERS = {
-    "openai": {
-        "name": "OpenAI",
-        "models": ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo", "gpt-4o"],
-        "api_base": "https://api.openai.com/v1",
-        "key_hint": "sk-..."
-    },
-    "anthropic": {
-        "name": "Anthropic",
-        "models": ["claude-3-sonnet-20240229", "claude-3-opus-20240229", "claude-3-haiku-20240307"],
-        "api_base": "https://api.anthropic.com",
-        "key_hint": "sk-ant-..."
-    },
     "alibaba": {
         "name": "阿里百炼",
         "models": [
@@ -42,7 +30,8 @@ PROVIDERS = {
             "qwen-plus",
             "qwen-max",
             "qwen-max-longcontext",
-            "qwen-coder-plus"
+            "qwen-coder-plus",
+            "qwen3-max"
         ],
         "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
         "key_hint": "sk-..."
@@ -67,7 +56,7 @@ st.markdown("## ⚙️ 系统设置")
 st.markdown("### 🔑 API配置")
 
 provider_list = list(PROVIDERS.keys())
-current_provider = st.session_state.get("model_provider", "openai")
+current_provider = st.session_state.get("model_provider", "alibaba")
 try:
     current_index = provider_list.index(current_provider)
 except ValueError:
@@ -196,23 +185,13 @@ st.markdown("### 📖 模型说明")
 
 with st.expander("查看平台详情"):
     st.markdown("""
-    #### OpenAI
-    - **gpt-3.5-turbo**: 快速、低成本，适合一般咨询
-    - **gpt-4**: 能力强，适合复杂法律分析
-    - **gpt-4-turbo**: 最新版本，性能均衡
-    - **gpt-4o**: 多模态支持，性价比最高
-    
-    #### Anthropic
-    - **claude-3-sonnet**: 性能与速度均衡
-    - **claude-3-opus**: 能力最强，深度分析
-    - **claude-3-haiku**: 响应最快，简单查询
-    
     #### 阿里百炼
     - **qwen-turbo**: 快速响应，低成本
     - **qwen-plus**: 性能均衡
     - **qwen-max**: 能力最强，复杂任务
     - **qwen-max-longcontext**: 长文本支持（1M tokens）
     - **qwen-coder-plus**: 代码相关任务
+    - **qwen3-max**: 最新旗舰模型，综合能力最强
     
     #### DeepSeek
     - **deepseek-chat**: 通用对话模型
@@ -251,51 +230,6 @@ with st.form("preferences"):
             "notifications": notifications
         })
         st.success("✅ 偏好已保存！")
-
-# Test Connection
-st.markdown("---")
-st.markdown("### 🧪 测试连接")
-
-if st.button("测试API连接"):
-    if not st.session_state.get("api_key"):
-        st.error("请先配置API Key")
-    else:
-        with st.spinner("正在测试连接..."):
-            try:
-                if provider == "openai":
-                    from langchain_openai import ChatOpenAI
-                    llm = ChatOpenAI(
-                        model=model,
-                        api_key=st.session_state.api_key,
-                        base_url=api_base if api_base else None
-                    )
-                elif provider == "anthropic":
-                    from langchain_anthropic import ChatAnthropic
-                    llm = ChatAnthropic(
-                        model=model,
-                        api_key=st.session_state.api_key
-                    )
-                elif provider in ["alibaba", "deepseek"]:
-                    from langchain_openai import ChatOpenAI
-                    llm = ChatOpenAI(
-                        model=model,
-                        api_key=st.session_state.api_key,
-                        base_url=api_base
-                    )
-                else:
-                    from langchain_openai import ChatOpenAI
-                    llm = ChatOpenAI(
-                        model=model,
-                        api_key=st.session_state.api_key,
-                        base_url=api_base
-                    )
-                
-                response = llm.invoke("Hello, this is a test. Please reply 'Connection successful'.")
-                st.success(f"✅ 连接成功！模型响应: {response.content[:50]}...")
-                
-            except Exception as e:
-                st.error(f"❌ 连接失败: {str(e)}")
-                st.info("请检查API Key和模型配置")
 
 # Danger Zone
 st.markdown("---")

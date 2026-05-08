@@ -9,7 +9,7 @@
 - **🔍 语义检索** - 基于向量数据库的法律条文检索
 - **👥 多用户支持** - 独立的用户空间和数据隔离
 - **🧠 长期记忆** - 记住用户偏好和设置
-- **⚙️ 自定义模型** - 支持OpenAI/Anthropic及自定义API Key
+- **⚙️ 自定义模型** - 支持阿里百炼/DeepSeek及自定义API Key
 
 ## 🚀 快速开始
 
@@ -47,10 +47,10 @@ D:\AI_agent\
 │   ├── loader.py        # 文档加载器
 │   └── retriever.py     # 检索器
 └── pages/                # Streamlit页面
-    ├── 1_对话.py        # 主对话页面
-    ├── 2_文档管理.py    # 文档上传/管理
-    ├── 3_设置.py        # 模型和API设置
-    └── 4_我的.py       # 用户信息/历史
+    ├── 1_chat.py        # 主对话页面
+    ├── 2_documents.py   # 文档上传/管理
+    ├── 3_settings.py    # 模型和API设置
+    └── 4_profile.py     # 用户信息/历史
 ```
 
 ## 🔧 配置说明
@@ -76,6 +76,7 @@ D:\AI_agent\
 - **前端**: Streamlit
 - **向量存储**: ChromaDB
 - **文档处理**: PyPDF, python-docx
+- **API clients**: 阿里百炼 (DashScope)
 - **记忆存储**: JSON文件
 
 ## 📝 注意事项

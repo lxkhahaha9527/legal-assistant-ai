@@ -1,10 +1,11 @@
 """
 法律助手智能体 - 配置管理
 支持多用户、长期记忆、自定义模型
-支持平台: OpenAI, Anthropic, 阿里百炼, DeepSeek
+支持平台: 阿里百炼, DeepSeek, 自定义
 """
 import os
 import json
+import time
 from pathlib import Path
 
 # 基础路径
@@ -27,8 +28,8 @@ DEFAULT_CONFIG = {
     "current_user": None,
     "users": {},
     "global_settings": {
-        "default_model": "openai",
-        "default_model_provider": "openai",
+        "default_model": "qwen-turbo",
+        "default_model_provider": "alibaba",
         "default_temperature": 0.7,
         "default_max_tokens": 2048,
     }
@@ -36,18 +37,6 @@ DEFAULT_CONFIG = {
 
 # 支持的模型提供商配置
 PROVIDER_CONFIG = {
-    "openai": {
-        "name": "OpenAI",
-        "default_model": "gpt-3.5-turbo",
-        "api_base": "https://api.openai.com/v1",
-        "env_key": "OPENAI_API_KEY"
-    },
-    "anthropic": {
-        "name": "Anthropic",
-        "default_model": "claude-3-sonnet-20240229",
-        "api_base": "https://api.anthropic.com",
-        "env_key": "ANTHROPIC_API_KEY"
-    },
     "alibaba": {
         "name": "阿里百炼",
         "default_model": "qwen-turbo",
@@ -106,13 +95,13 @@ class ConfigManager:
             "username": username,
             "password": password,
             "api_keys": api_keys or {},
-            "model_provider": "openai",
-            "preferred_model": "gpt-3.5-turbo",
+            "model_provider": "alibaba",
+            "preferred_model": "qwen-turbo",
             "api_base": "",
             "temperature": 0.7,
             "max_tokens": 2048,
             "conversations": [],
-            "created_at": str(Path(".").resolve())
+            "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
         }
         self.users_data["users"] = users
         save_json(USERS_FILE, self.users_data)
@@ -140,8 +129,8 @@ class ConfigManager:
     def get_user_model_config(self, user_id: str) -> dict:
         """获取用户模型配置"""
         user = self.get_user(user_id)
-        provider = user.get("model_provider", "openai")
-        provider_info = PROVIDER_CONFIG.get(provider, PROVIDER_CONFIG["openai"])
+        provider = user.get("model_provider", "alibaba")
+        provider_info = PROVIDER_CONFIG.get(provider, PROVIDER_CONFIG["alibaba"])
         
         # 优先使用用户设置的 API Key，如果没有则尝试环境变量
         user_api_key = user.get("api_keys", {}).get(provider, "")

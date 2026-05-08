@@ -24,8 +24,6 @@ conv_manager = ConversationManager(user_id)
 
 # Provider name mapping
 PROVIDER_NAMES = {
-    "openai": "OpenAI",
-    "anthropic": "Anthropic",
     "alibaba": "阿里百炼",
     "deepseek": "DeepSeek",
     "custom": "自定义"

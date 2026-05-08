@@ -25,7 +25,6 @@ def ensure_dirs():
  ]
  for d in dirs:
      os.makedirs(d, exist_ok=True)
-     # print(f"目录已确保: {d}") # 调试用
 
 ensure_dirs()
 # =====================================
@@ -87,7 +86,7 @@ def init_session_state():
     if "api_key" not in st.session_state:
         st.session_state.api_key = None
     if "model_provider" not in st.session_state:
-        st.session_state.model_provider = "openai"
+        st.session_state.model_provider = "alibaba"
 
 
 def login_page():
@@ -115,11 +114,11 @@ def login_page():
                         st.session_state.username = user.get("username", user_id)
                         
                         # 读取用户配置的 provider 和对应的 API Key
-                        provider = user.get("model_provider", "openai")
+                        provider = user.get("model_provider", "alibaba")
                         st.session_state.model_provider = provider
                         api_keys = user.get("api_keys", {})
-                        st.session_state.api_key = api_keys.get(provider, api_keys.get("openai", ""))
-                        st.session_state.current_model = user.get("preferred_model", "")
+                        st.session_state.api_key = api_keys.get(provider, api_keys.get("alibaba", ""))
+                        st.session_state.current_model = user.get("preferred_model", "qwen-turbo")
                         
                         st.success("登录成功！")
                         st.rerun()

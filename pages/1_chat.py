@@ -1,6 +1,6 @@
 """
 Chat Page - Main conversation interface
-Supports multiple platforms: OpenAI, Anthropic, Alibaba, DeepSeek
+Supports multiple platforms: Alibaba, DeepSeek, Custom
 """
 import streamlit as st
 import sys
@@ -28,8 +28,8 @@ conv_manager = ConversationManager(user_id)
 user = config.get_user(user_id)
 user_config = {
     "api_key": st.session_state.get("api_key", ""),
-    "model_provider": st.session_state.get("model_provider", "openai"),
-    "current_model": st.session_state.get("current_model", "gpt-3.5-turbo"),
+    "model_provider": st.session_state.get("model_provider", "alibaba"),
+    "current_model": st.session_state.get("current_model", "qwen-turbo"),
     "api_base": user.get("api_base", ""),
     "temperature": user.get("temperature", 0.7),
     "max_tokens": user.get("max_tokens", 2048)
@@ -43,7 +43,7 @@ if user_config["api_key"]:
 
 
 def get_llm():
-    """Get LLM instance based on configuration"""
+    """Get LLM instance based on configuration - 使用阿里百炼 ChatTongyi"""
     provider = user_config["model_provider"]
     model = user_config["current_model"]
     api_key = user_config["api_key"]
@@ -55,35 +55,18 @@ def get_llm():
         return None
     
     try:
-        if provider == "openai":
-            from langchain_openai import ChatOpenAI
-            return ChatOpenAI(
-                model=model,
-                api_key=api_key,
-                temperature=temperature,
-                max_tokens=max_tokens
-            )
-        
-        elif provider == "anthropic":
-            from langchain_anthropic import ChatAnthropic
-            return ChatAnthropic(
-                model=model,
-                api_key=api_key,
-                temperature=temperature,
-                max_tokens=max_tokens
-            )
-        
-        elif provider == "alibaba":
-            from langchain_openai import ChatOpenAI
-            return ChatOpenAI(
-                model=model,
-                api_key=api_key,
-                base_url=api_base or "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        if provider == "alibaba":
+            # 使用阿里百炼 ChatTongyi
+            from langchain_community.chat_models.tongyi import ChatTongyi
+            return ChatTongyi(
+                model=model or "qwen-turbo",
+                dashscope_api_key=api_key,
                 temperature=temperature,
                 max_tokens=max_tokens
             )
         
         elif provider == "deepseek":
+            # DeepSeek 使用 OpenAI 兼容接口
             from langchain_openai import ChatOpenAI
             return ChatOpenAI(
                 model=model,
@@ -94,6 +77,7 @@ def get_llm():
             )
         
         elif provider == "custom":
+            # 自定义提供商使用 OpenAI 兼容接口
             from langchain_openai import ChatOpenAI
             return ChatOpenAI(
                 model=model,
@@ -104,8 +88,14 @@ def get_llm():
             )
         
         else:
-            st.error(f"不支持的提供商: {provider}")
-            return None
+            # 默认使用阿里百炼
+            from langchain_community.chat_models.tongyi import ChatTongyi
+            return ChatTongyi(
+                model="qwen-turbo",
+                dashscope_api_key=api_key,
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
             
     except Exception as e:
         st.error(f"初始化模型失败: {str(e)}")
@@ -141,12 +131,10 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 🤖 当前模型")
     provider_name = {
-        "openai": "OpenAI",
-        "anthropic": "Anthropic",
         "alibaba": "阿里百炼",
         "deepseek": "DeepSeek",
         "custom": "自定义"
-    }.get(user_config["model_provider"], "未知")
+    }.get(user_config["model_provider"], "阿里百炼")
     
     st.text(f"提供商: {provider_name}")
     st.text(f"模型: {user_config['current_model']}")

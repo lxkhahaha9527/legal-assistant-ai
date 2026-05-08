@@ -1,5 +1,6 @@
 """
 RAG模块 - 向量检索器
+支持多种嵌入模型：阿里百炼(DashScope)
 """
 import os
 import json
@@ -7,7 +8,6 @@ from pathlib import Path
 from typing import List, Optional
 import chromadb
 from chromadb.config import Settings
-from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 from .loader import LegalDocLoader
@@ -27,14 +27,24 @@ class LegalRetriever:
         self.collection_name = collection_name or f"legal_docs_{user_id}"
         self.embeddings = None
         self.vectorstore = None
+        self.embedding_provider = "alibaba"  # 默认使用阿里百炼
     
-    def set_api_key(self, api_key: str, provider: str = "openai") -> None:
-        """设置API Key"""
-        os.environ["OPENAI_API_KEY"] = api_key
-        self.embeddings = OpenAIEmbeddings(
-            model="text-embedding-3-small",
-            openai_api_key=api_key
-        )
+    def set_api_key(self, api_key: str = None, provider: str = "alibaba") -> None:
+        """设置API Key和嵌入模型 - 默认使用阿里百炼 DashScope"""
+        self.embedding_provider = provider
+        
+        # 优先使用阿里百炼 DashScope 嵌入模型
+        try:
+            from langchain_community.embeddings import DashScopeEmbeddings
+            self.embeddings = DashScopeEmbeddings(
+                model="text-embedding-v2",
+                dashscope_api_key=api_key
+            )
+        except ImportError:
+            raise
+        except Exception as e:
+            raise RuntimeError(f"加载 DashScope 嵌入模型失败: {e}")
+            raise
     
     def build_index(
         self,
@@ -43,6 +53,9 @@ class LegalRetriever:
         regenerate: bool = False
     ) -> bool:
         """构建向量索引"""
+        if self.embeddings is None:
+            return False
+            
         if documents is None:
             docs_dir = docs_dir or self.docs_dir
             if not docs_dir:
@@ -61,17 +74,19 @@ class LegalRetriever:
         if regenerate:
             self._delete_collection()
         
-        self.vectorstore = Chroma.from_documents(
-            documents=documents,
-            embedding=self.embeddings,
-            collection_name=self.collection_name,
-            persist_directory=str(persist_dir)
-        )
-        
-        # 持久化到磁盘
-        self.vectorstore.persist()
-        
-        return True
+        try:
+            self.vectorstore = Chroma.from_documents(
+                documents=documents,
+                embedding=self.embeddings,
+                collection_name=self.collection_name,
+                persist_directory=str(persist_dir)
+            )
+            
+            # 持久化到磁盘
+            self.vectorstore.persist()
+            return True
+        except Exception as e:
+            raise RuntimeError(f"索引构建失败: {e}")
     
     def search(
         self,
@@ -128,6 +143,9 @@ class LegalRetriever:
         if not persist_dir.exists():
             return False
         
+        if self.embeddings is None:
+            return False
+        
         try:
             self.vectorstore = Chroma(
                 collection_name=self.collection_name,
@@ -135,7 +153,7 @@ class LegalRetriever:
                 persist_directory=str(persist_dir)
             )
             return True
-        except:
+        except Exception as e:
             return False
     
     def _delete_collection(self) -> None:
@@ -155,11 +173,7 @@ class LegalRetriever:
         """获取索引文档数量"""
         # 确保 embedding 已初始化
         if not self.embeddings:
-            api_key = os.environ.get("OPENAI_API_KEY")
-            if api_key:
-                self.set_api_key(api_key)
-            else:
-                return 0
+            return 0
         
         if not self.vectorstore:
             self._load_index()

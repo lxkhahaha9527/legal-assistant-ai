@@ -1,13 +1,11 @@
 # Web UI
-streamlit>=1.28.0
-streamlit-option-menu>=0.3.6
+streamlit>=1.28.0,<2.0.0
 
 # LangChain framework
-langchain>=0.1.0
-langchain-openai>=0.0.5
-langchain-anthropic>=0.1.0
-langchain-community>=0.0.10
-langchain-text-splitters>=0.0.1
+langchain>=0.3.0,<0.4.0
+langchain-community>=0.3.0,<0.4.0
+langchain-text-splitters>=0.3.0,<0.4.0
+langchain-openai>=0.3.0,<0.4.0
 
 # Vector database
 chromadb>=0.4.22
@@ -16,16 +14,12 @@ chromadb>=0.4.22
 pypdf>=3.17.0
 python-docx>=1.1.0
 
-# Embeddings for RAG
-sentence-transformers>=2.2.0
-
-# API clients
-openai>=1.0.0
-anthropic>=0.8.0
+# API clients - 阿里百炼 (DashScope)
+dashscope>=1.13.0
 
 # Utilities
 pydantic>=2.5.0
 python-dotenv>=1.0.0
 
-# Fix protobuf compatibility
-protobuf<=3.20.3
+# HTTP client
+requests>=2.31.0

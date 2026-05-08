@@ -8,10 +8,43 @@ from typing import List
 from langchain_community.document_loaders import (
     TextLoader,
     PyPDFLoader,
-    UnstructuredWordDocumentLoader,
 )
+
+try:
+    from langchain_community.document_loaders import UnstructuredWordDocumentLoader
+    HAS_UNSTRUCTURED = True
+except ImportError:
+    HAS_UNSTRUCTURED = False
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
+
+
+class DocxLoader:
+    """基于 python-docx 的文档加载器"""
+    
+    def __init__(self, file_path: str):
+        self.file_path = file_path
+    
+    def load(self) -> List[Document]:
+        """加载 docx 文件"""
+        import docx
+        doc = docx.Document(self.file_path)
+        
+        # 提取所有段落文本
+        paragraphs = []
+        for para in doc.paragraphs:
+            if para.text.strip():
+                paragraphs.append(para.text)
+        
+        # 合并为完整文本
+        full_text = '\n'.join(paragraphs)
+        
+        # 创建 Document 对象
+        from langchain_core.documents import Document
+        return [Document(
+            page_content=full_text,
+            metadata={"source": self.file_path}
+        )]
 
 
 class LegalDocLoader:
@@ -51,9 +84,22 @@ class LegalDocLoader:
         elif ext == '.pdf':
             return PyPDFLoader(str(path))
         elif ext in ['.doc', '.docx']:
-            return UnstructuredWordDocumentLoader(str(path))
+            # 优先使用 python-docx，更稳定
+            return self._create_docx_loader(path)
         else:
             raise ValueError(f"不支持的格式: {ext}")
+    
+    def _create_docx_loader(self, path: Path):
+        """创建 docx 加载器，优先使用 python-docx"""
+        try:
+            import docx
+            # 使用自定义加载器
+            return DocxLoader(str(path))
+        except ImportError:
+            if HAS_UNSTRUCTURED:
+                return UnstructuredWordDocumentLoader(str(path))
+            else:
+                raise ImportError("请安装 python-docx: pip install python-docx")
     
     def load_directory(self, directory: str) -> List[Document]:
         """加载目录下所有支持的文件"""
@@ -64,8 +110,8 @@ class LegalDocLoader:
             if file_path.is_file() and file_path.suffix.lower() in self.SUPPORTED_EXTENSIONS:
                 try:
                     docs.extend(self.load_file(str(file_path)))
-                except Exception as e:
-                    print(f"加载失败 {file_path.name}: {e}")
+                except Exception:
+                    pass
         
         return docs
     

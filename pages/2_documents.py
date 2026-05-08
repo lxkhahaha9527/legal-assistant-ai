@@ -54,18 +54,29 @@ with col1:
                 with st.spinner("正在构建索引..."):
                     try:
                         retriever = LegalRetriever(user_id, str(user_docs_dir))
-                        retriever.set_api_key(st.session_state.api_key)
+                        # 获取用户配置的 provider，默认使用阿里百炼
+                        user_config = config.get_user_model_config(user_id)
+                        provider = user_config.get("provider", "alibaba")
+                        api_key = user_config.get("api_key", st.session_state.get("api_key", ""))
+                        
+                        if not api_key:
+                            st.error("❌ 未配置 API Key，请在设置页面配置")
+                            st.stop()
+                        
+                        retriever.set_api_key(api_key)
                         
                         loader = LegalDocLoader(str(user_docs_dir))
                         docs = loader.load_directory(str(user_docs_dir))
                         
                         if docs:
                             retriever.build_index(documents=docs, regenerate=True)
-                            st.success(f"索引构建完成！共 {len(docs)} 个文档片段")
+                            st.success(f"🎉 索引构建完成！共 {len(docs)} 个文档片段")
                         else:
-                            st.warning("没有找到可索引的文档")
+                            st.warning("⚠️ 没有找到可索引的文档")
                     except Exception as e:
-                        st.error(f"索引构建失败: {str(e)}")
+                        st.error(f"❌ 索引构建失败: {str(e)}")
+                        import traceback
+                        st.code(traceback.format_exc())
         else:
             st.warning("请先设置API Key")
 
