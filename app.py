@@ -113,7 +113,14 @@ def login_page():
                         st.session_state.user_id = user_id
                         user = config.get_user(user_id)
                         st.session_state.username = user.get("username", user_id)
-                        st.session_state.api_key = user.get("api_keys", {}).get("openai")
+                        
+                        # 读取用户配置的 provider 和对应的 API Key
+                        provider = user.get("model_provider", "openai")
+                        st.session_state.model_provider = provider
+                        api_keys = user.get("api_keys", {})
+                        st.session_state.api_key = api_keys.get(provider, api_keys.get("openai", ""))
+                        st.session_state.current_model = user.get("preferred_model", "")
+                        
                         st.success("登录成功！")
                         st.rerun()
                     else:
